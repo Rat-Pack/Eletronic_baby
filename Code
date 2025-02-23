@@ -1,0 +1,200 @@
+/********************************************************
+ * CANAL INTERNET E COISAS
+ * Projeto de IoT #9
+ * JARVIS Babá - Multiplataforma
+ *    - Arduino - Serial
+ *    - ESP8266 NodeMCU - HTTP
+ *    - ESP32 - HTTP
+ * 11/2019 - Andre Michelon
+ */
+
+// Configurações de Wi-Fi
+#if defined ESP8266 || defined ESP32
+  // Bibliotecas ------------------------------------------
+  #ifdef ESP8266
+    #include <ESP8266WiFi.h>
+    #include <ESP8266HTTPClient.h>
+  #else
+    #include <WiFi.h>
+    #include <HTTPClient.h>
+  #endif
+
+  // Inicializa instancias --------------------------------
+  HTTPClient  httpClient;
+
+  // Wi-Fi ------------------------------------------------
+  const char* ssid                = "home2.4";
+  const char* password            = "Home31415";
+#endif
+
+// Constantes -------------------------------------------
+// Limites de medidas e som para alertar
+#ifdef ESP32
+  // ESP32 - resolução 12bits, tensão 3,3V
+  const word  MID_SCALE           = 2048;
+  const word  SND_TRIG_MIN        = 650;
+  const word  SND_TRIG_MAX        = 1100;
+#elif defined ESP8266
+  // ESP8266 - resolução 10bits, tensão 3,3V
+  const word  MID_SCALE           = 512;
+  const word  SND_TRIG_MIN        = 50;
+  const word  SND_TRIG_MAX        = 100;
+#else
+  // Arduino - resolução 10bits, tensão 5V
+  const word  MID_SCALE           = 512;
+  const word  SND_TRIG_MIN        = 50;
+  const word  SND_TRIG_MAX        = 110;
+#endif
+
+// Intervalo mínimo entre alertas
+const word    SND_ALERT_INTERVAL  = 5000;
+
+// Fator de amplificação
+const byte    SND_AMPLIFICATION   = 3;
+
+// Identificação do sensor
+const String  SENSOR_ID           = "QuartoNene";
+
+// Porta de leitura
+#ifdef ESP32
+  // ESP32 - usando pino 33
+  const byte  ANALOG_PIN          = 33;
+#else
+  // Arduino e ESP8266 NodeMCU será usada a porta A0
+  const byte  ANALOG_PIN          = A0;
+#endif
+
+// Pino do LED
+#ifdef ESP32
+  // ESP32 não possui pino padrão de LED
+  const byte  LED_PIN             = 2;
+#else
+  // Arduino e ESP8266 possuem pino padrão de LED
+  const byte  LED_PIN             = LED_BUILTIN;
+#endif
+
+// Estado do LED
+#ifdef ESP8266
+  // ESP8266 utiliza o estado inverso
+  const byte  LED_ON              = LOW;
+  const byte  LED_OFF             = HIGH;
+#else
+  // Arduino e ESP32 utilizam estado normal
+  const byte  LED_ON              = HIGH;
+  const byte  LED_OFF             = LOW;
+#endif
+
+// Variaveis globais ------------------------------------
+// Início do som
+unsigned long sndStart            = 0;
+
+// Último alerta
+unsigned long sndLast             = 0;
+
+// Nível de som medido
+int           snd                 = 0;
+
+// Nível de som médio
+word          sndLvl              = 0;
+
+// Flag de som detectado
+bool          sndFl               = false;
+
+// Setup ------------------------------------------------
+void setup() {
+  // Incializa
+  #ifdef ESP8266
+    // Velocidade para ESP8266
+    Serial.begin(74880);
+  #else
+    // Velocidade para Arduino e ESP32
+    Serial.begin(115200);
+  #endif
+
+  // Prepara LED da placa
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LED_OFF);
+
+  #if defined ESP8266 || defined ESP32
+    // Conecta ao Wi-Fi
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.print("\nWiFi conectado - IP ");
+    Serial.println(WiFi.localIP());
+  #endif
+}
+
+// Loop -------------------------------------------------
+void loop() {
+  // Le sensor de Som
+  snd = MID_SCALE - analogRead(ANALOG_PIN);
+  snd = abs(snd) * SND_AMPLIFICATION;
+  if (snd > MID_SCALE * 2 - 1) {
+    // Ajusta intensidade máxima
+    snd = MID_SCALE * 2 - 1;
+  }
+
+  // Atualiza valor medio de som
+  sndLvl = (sndLvl * 9 + snd) / 10;
+
+  if (sndLvl > SND_TRIG_MAX) {
+    // Som detectado
+    if (!sndFl) {
+      // Nova detecção
+      sndStart = millis();
+      sndFl = true;
+
+      // Sinaliza LED - liga
+      digitalWrite(LED_PIN, LED_ON);
+    }
+
+    if (sndFl && (millis() - sndLast) > SND_ALERT_INTERVAL) {
+      // Enviar alerta
+      #if defined ESP8266 || defined ESP32
+        // ESP8266 ou ESP32 - alerta via HTTP
+        httpClient.begin("http://192.168.0.31/"
+                          "?" + SENSOR_ID +
+                          "&" + String((millis() - sndStart) / 1000) +
+                          "&" + String(sndLvl));
+
+        int code = httpClient.GET();
+        if (code == HTTP_CODE_OK) {
+          // Sucesso, atualiza último envio
+          sndLast = millis();
+        } else {
+          // Falha, aguarda para nova tentativa
+          Serial.println("Erro: " + httpClient.errorToString(code));
+          delay(1000);
+        }
+        httpClient.end();
+      #else
+        // Arduino - alerta via Serial
+        Serial.print('['  + SENSOR_ID +
+                      '&' + String((millis() - sndStart) / 1000) +
+                      '&' + String(sndLvl) + ']');
+        // Atualiza último envio
+        sndLast = millis();
+      #endif
+    }
+  } else if (sndLvl < SND_TRIG_MIN) {
+    // Som não detectado
+    sndFl = false;
+
+    // Sinaliza LED - apaga
+    digitalWrite(LED_PIN, LED_OFF);
+  }
+
+  // Log - descomente para exibir dados de teste
+/*
+  Serial.print(String(sndLvl) + "\t");
+  if (sndFl) {
+    Serial.println("Sim Duração:" + String((millis() - sndStart) / 1000));
+  } else {
+    Serial.println("Não");
+  }
+*/
+  delay(10);
+}
