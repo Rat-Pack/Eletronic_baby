@@ -1,0 +1,27 @@
+Esquema de Ligação
+componentes:
+ESP32
+Microfone
+LED
+Resistor (220Ω)
+Conexões:
+Microfone:
+A0 (Saída Analógica) -> GPIO33 (Entrada ADC) no ESP32
+GND -> GND no ESP32
+VCC -> 3.3V no ESP32
+LED:
+Anodo do LED -> Resistor (220Ω)
+Resistor (220Ω) -> GPIO2 no ESP32
+Cátodo do LED -> GND no ESP32
+Microfone (A0) ----> GPIO33 (ESP32)
+Microfone (GND) ---> GND (ESP32)
+Microfone (VCC) ---> 3.3V (ESP32)
+
+LED (Anodo) ---> Resistor (220Ω) ---> GPIO2 (ESP32)
+LED (Cátodo) ---> GND (ESP32)
+ESP32        | Microfone      | LED
+-------------|----------------|----------------
+GPIO33       | A0             |  
+GND          | GND            | Cátodo
+3.3V         | VCC            |  
+GPIO2        |                | Anodo -> Resistor -> GPIO2
