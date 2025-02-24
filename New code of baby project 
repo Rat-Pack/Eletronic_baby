@@ -1,0 +1,235 @@
+Projeto Babá eletrônica 
+Com certeza! Aqui está um código básico para uma babá eletrônica com ESP32 que envia notificações para um smartphone quando o bebê chora. Este código utiliza o módulo de som MAX4466 para detectar o choro do bebê e o protocolo HTTP para enviar notificações para um aplicativo no smartphone.
+Materiais:
+ * ESP32
+ * Módulo de som MAX4466
+ * Resistor de 10kΩ
+ * Jumpers
+ * Fonte de alimentação
+ * Smartphone com um aplicativo de notificações HTTP (ex: IFTTT, Pushbullet)
+Código:
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+// Configurações de rede
+const char* ssid = "NOME_DA_SUA_REDE_WIFI";
+const char* password = "SENHA_DA_SUA_REDE_WIFI";
+
+// Configurações do módulo de som
+const int soundPin = 34; // Pino analógico do módulo de som
+const int threshold = 500; // Valor de limiar para detectar choro
+
+// Configurações do aplicativo de notificações
+const char* notificationUrl = "URL_DO_SEU_APLICATIVO_DE_NOTIFICACOES";
+
+void setup() {
+  Serial.begin(115200);
+
+  // Conecta-se à rede Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("Conectado ao Wi-Fi");
+}
+
+void loop() {
+  // Lê o valor do módulo de som
+  int soundValue = analogRead(soundPin);
+
+  // Verifica se o valor ultrapassa o limiar
+  if (soundValue > threshold) {
+    Serial.println("Choro detectado!");
+
+    // Envia notificação para o aplicativo
+    HTTPClient http;
+    http.begin(notificationUrl);
+    int httpCode = http.POST(""); // Envia uma requisição POST vazia
+    if (httpCode > 0) {
+      Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+    } else {
+      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    http.end();
+
+    delay(5000); // Aguarda 5 segundos antes de detectar novamente
+  }
+}
+
+Explicação do código:
+ * Inclui as bibliotecas necessárias: WiFi.h para conexão Wi-Fi e HTTPClient.h para enviar notificações HTTP.
+ * Configura as informações de rede e do módulo de som: Substitua os valores de ssid, password e notificationUrl pelos seus dados.
+ * Na função setup():
+   * Inicializa a comunicação serial.
+   * Conecta-se à rede Wi-Fi.
+ * Na função loop():
+   * Lê o valor analógico do módulo de som.
+   * Verifica se o valor ultrapassa o limiar definido.
+   * Se o choro for detectado:
+     * Envia uma notificação HTTP para o aplicativo.
+     * Aguarda 5 segundos para evitar envios repetidos.
+Configuração do aplicativo de notificações:
+Você precisará configurar um aplicativo de notificações HTTP no seu smartphone. Existem várias opções, como IFTTT ou Pushbullet. Siga as instruções do aplicativo escolhido para criar um webhook e obter o URL que será usado no código ESP32.
+Montagem:
+ * Conecte o módulo de som MAX4466 ao ESP32:
+   * VCC ao 3V3 do ESP32
+   * GND ao GND do ESP32
+   * OUT ao pino 34 do ESP32
+ * Conecte o resistor de 10kΩ entre o pino 34 e o GND do ESP32.
+ * Conecte a fonte de alimentação ao ESP32.
+Observações:
+ * Este código é um exemplo básico e pode precisar de ajustes dependendo do seu módulo de som e aplicativo de notificações.
+ * O valor de limiar (threshold) pode precisar ser ajustado dependendo do ambiente e da sensibilidade do módulo de som.
+ * É importante testar o código em um ambiente controlado para garantir que ele funcione corretamente.
+Com este código e as configurações corretas, você terá uma babá eletrônica que te avisa no seu smartphone quando o bebê chorar!
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+// Configurações de rede
+const char* ssid = "NOME_DA_SUA_REDE_WIFI";
+const char* password = "SENHA_DA_SUA_REDE_WIFI";
+
+// Configurações do módulo de som
+const int soundPin = 34; // Pino analógico do módulo de som
+const int threshold = 500; // Valor de limiar para detectar choro
+
+// Configurações do aplicativo de notificações
+const char* notificationUrl = "URL_DO_SEU_APLICATIVO_DE_NOTIFICACOES";
+
+void setup() {
+  Serial.begin(115200);
+
+  // Conecta-se à rede Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("Conectado ao Wi-Fi");
+}
+
+void loop() {
+  // Lê o valor do módulo de som
+  int soundValue = analogRead(soundPin);
+
+  // Verifica se o valor ultrapassa o limiar
+  if (soundValue > threshold) {
+    Serial.println("Choro detectado!");
+
+    // Envia notificação para o aplicativo
+    HTTPClient http;
+    http.begin(notificationUrl);
+    int httpCode = http.POST(""); // Envia uma requisição POST vazia
+    if (httpCode > 0) {
+      Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+    } else {
+      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    http.end();
+
+    delay(5000); // Aguarda 5 segundos antes de detectar novamente
+  }
+}
+Com certeza! Aqui está um código básico para uma babá eletrônica com ESP32 que envia notificações para um smartphone quando o bebê chora. Este código utiliza o módulo de som MAX4466 para detectar o choro do bebê e o protocolo HTTP para enviar notificações para um aplicativo no smartphone.
+Materiais:
+ * ESP32
+ * Módulo de som MAX4466
+ * Resistor de 10kΩ
+ * Jumpers
+ * Fonte de alimentação
+ * Smartphone com um aplicativo de notificações HTTP (ex: IFTTT, Pushbullet)
+Código:
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+// Configurações de rede
+const char* ssid = "NOME_DA_SUA_REDE_WIFI";
+const char* password = "SENHA_DA_SUA_REDE_WIFI";
+
+// Configurações do módulo de som
+const int soundPin = 34; // Pino analógico do módulo de som
+const int threshold = 500; // Valor de limiar para detectar choro
+
+// Configurações do aplicativo de notificações
+const char* notificationUrl = "URL_DO_SEU_APLICATIVO_DE_NOTIFICACOES";
+
+void setup() {
+  Serial.begin(115200);
+
+  // Conecta-se à rede Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("Conectado ao Wi-Fi");
+}
+
+void loop() {
+  // Lê o valor do módulo de som
+  int soundValue = analogRead(soundPin);
+
+  // Verifica se o valor ultrapassa o limiar
+  if (soundValue > threshold) {
+    Serial.println("Choro detectado!");
+
+    // Envia notificação para o aplicativo
+    HTTPClient http;
+    http.begin(notificationUrl);
+    int httpCode = http.POST(""); // Envia uma requisição POST vazia
+    if (httpCode > 0) {
+      Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+    } else {
+      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    http.end();
+
+    delay(5000); // Aguarda 5 segundos antes de detectar novamente
+  }
+}
+
+Explicação do código:
+ * Inclui as bibliotecas necessárias: WiFi.h para conexão Wi-Fi e HTTPClient.h para enviar notificações HTTP.
+ * Configura as informações de rede e do módulo de som: Substitua os valores de ssid, password e notificationUrl pelos seus dados.
+ * Na função setup():
+   * Inicializa a comunicação serial.
+   * Conecta-se à rede Wi-Fi.
+ * Na função loop():
+   * Lê o valor analógico do módulo de som.
+   * Verifica se o valor ultrapassa o limiar definido.
+   * Se o choro for detectado:
+     * Envia uma notificação HTTP para o aplicativo.
+     * Aguarda 5 segundos para evitar envios repetidos.
+Configuração do aplicativo de notificações:
+Você precisará configurar um aplicativo de notificações HTTP no seu smartphone. Existem várias opções, como IFTTT ou Pushbullet. Siga as instruções do aplicativo escolhido para criar um webhook e obter o URL que será usado no código ESP32.
+Montagem:
+ * Conecte o módulo de som MAX4466 ao ESP32:
+   * VCC ao 3V3 do ESP32
+   * GND ao GND do ESP32
+   * OUT ao pino 34 do ESP32
+ * Conecte o resistor de 10kΩ entre o pino 34 e o GND do ESP32.
+ * Conecte a fonte de alimentação ao ESP32.
+Observações:
+ * Este código é um exemplo básico e pode precisar de ajustes dependendo do seu módulo de som e aplicativo de notificações.
+ * O valor de limiar (threshold) pode precisar ser ajustado dependendo do ambiente e da sensibilidade do módulo de som.
+ * É importante testar o código em um ambiente controlado para garantir que ele funcione corretamente.
+Com este código e as configurações corretas, você terá uma babá eletrônica que te avisa no seu smartphone quando o bebê chorar!
+Para este projeto de babá eletrônica com ESP32, você tem algumas opções de aplicativos de comando para smartphone, cada um com suas vantagens e recursos específicos. A escolha do "melhor" aplicativo dependerá das suas necessidades e preferências. Aqui estão algumas opções populares e suas características:
+Aplicativos de Notificação HTTP:
+ * IFTTT (If This Then That): Uma plataforma de automação que permite criar "applets" conectando diferentes serviços. Você pode configurar um applet que receba a notificação HTTP do ESP32 e a envie para o seu smartphone via push notification, SMS ou outros serviços. O IFTTT oferece flexibilidade e integração com diversos aplicativos, mas pode exigir alguma configuração.
+ * Pushbullet: Um serviço de mensagens que permite enviar notificações push para o seu smartphone. Você pode configurar o ESP32 para enviar uma mensagem HTTP para o Pushbullet, que a encaminhará para o seu dispositivo. O Pushbullet é simples de usar e oferece notificações rápidas, mas pode ter algumas limitações na versão gratuita.
+Aplicativos de Monitoramento de Bebês:
+ * Baby Monitor 3G: Um aplicativo dedicado para monitorar bebês que oferece recursos como áudio e vídeo em tempo real, detecção de choro e notificação no smartphone. Você pode integrar o ESP32 ao Baby Monitor 3G para enviar alertas de choro e aproveitar os recursos adicionais do aplicativo. O Baby Monitor 3G é uma opção completa, mas pode ser pago.
+ * Dormi: Outro aplicativo popular para monitorar bebês que oferece áudio de alta qualidade, detecção de ruído e notificações inteligentes. Você pode usar o Dormi como receptor das notificações do ESP32 e aproveitar seus recursos avançados. O Dormi é uma opção robusta, mas também pode ter custos associados.
+Outras Opções:
+ * Aplicativos de Automação Residencial: Se você já utiliza aplicativos como Google Home ou Amazon Alexa para controlar sua casa, pode ser possível integrar o ESP32 e configurar rotinas para receber notificações no seu smartphone. Essa opção pode ser interessante se você busca uma solução integrada com outros dispositivos.
+ * Aplicativos Personalizados: Se você tiver conhecimento em desenvolvimento de aplicativos, pode criar um aplicativo personalizado para receber as notificações do ESP32 e apresentar as informações da forma desejada. Essa opção oferece flexibilidade total, mas exige mais trabalho e conhecimento técnico.
+Recomendação:
+Se você busca uma solução simples e gratuita, o IFTTT ou o Pushbullet podem ser boas opções para receber as notificações do ESP32. Se você precisa de recursos mais avançados, como áudio e vídeo em tempo real, o Baby Monitor 3G ou o Dormi podem ser mais adequados, mas podem ter custos associados.
+Considerações Adicionais:
+ * Facilidade de uso: Avalie a interface e a facilidade de configuração de cada aplicativo para escolher o que melhor se adapta às suas necessidades.
+ * Recursos: Verifique se o aplicativo oferece os recursos que você precisa, como notificações push, histórico de eventos, personalização de alertas, etc.
+ * Custo: Alguns aplicativos são gratuitos, enquanto outros oferecem planos pagos com recursos adicionais. Considere o seu orçamento e as suas necessidades antes de escolher.
+ * Integração: Se você já utiliza outros aplicativos ou dispositivos, verifique se o aplicativo escolhido é compatível e permite a integração.
+Lembre-se de que a melhor opção dependerá das suas preferências e necessidades específicas. Explore as opções disponíveis, teste os aplicativos e escolha o que melhor se adapta ao seu projeto de babá eletrônica com ESP32.
