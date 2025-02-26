@@ -1,0 +1,115 @@
+// Bibliotecas -------------------------------------------------
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+// Configurações de Wi-Fi --------------------------------------
+const char* ssid                = "home2.4";
+const char* password            = "Home31415";
+
+// Definições de pinos -----------------------------------------
+const byte  ANALOG_PIN          = 15;   // Pino do microfone (GPIO15)
+const byte  RED_PIN             = 21;   // Pino do LED RGB (vermelho)
+const byte  GREEN_PIN           = 22;   // Pino do LED RGB (verde)
+const byte  BLUE_PIN            = 23;   // Pino do LED RGB (azul)
+
+// Definições de som -------------------------------------------
+const word  MID_SCALE           = 2048; // Meio da escala para ESP32 (12 bits)
+const word  SND_TRIG_MIN        = 650;  // Limite inferior de som para acionar
+const word  SND_TRIG_MAX        = 1100; // Limite superior de som para acionar
+
+// Intervalo mínimo entre alertas
+const word    SND_ALERT_INTERVAL  = 5000;
+
+// Fator de amplificação
+const byte    SND_AMPLIFICATION   = 3;
+
+// Identificação do sensor
+const String  SENSOR_ID           = "QuartoNene";
+
+// Variáveis globais -------------------------------------------
+unsigned long sndStart            = 0;  // Início do som
+unsigned long sndLast             = 0;  // Último alerta
+int           snd                 = 0;  // Nível de som medido
+word          sndLvl              = 0;  // Nível de som médio
+bool          sndFl               = false; // Flag de som detectado
+
+HTTPClient httpClient;
+
+void setup() {
+  // Inicializa a serial
+  Serial.begin(115200);
+
+  // Inicializa os pinos do LED RGB
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
+  
+  // Desliga o LED RGB no início
+  digitalWrite(RED_PIN, LOW);
+  digitalWrite(GREEN_PIN, LOW);
+  digitalWrite(BLUE_PIN, LOW);
+
+  // Conecta ao Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.print("\nWiFi conectado - IP ");
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // Leitura do nível de som
+  snd = MID_SCALE - analogRead(ANALOG_PIN);
+  snd = abs(snd) * SND_AMPLIFICATION;
+  if (snd > MID_SCALE * 2 - 1) {
+    snd = MID_SCALE * 2 - 1;
+  }
+
+  // Atualiza o valor médio de som
+  sndLvl = (sndLvl * 9 + snd) / 10;
+
+  if (sndLvl > SND_TRIG_MAX) {
+    // Som detectado
+    if (!sndFl) {
+      sndStart = millis();
+      sndFl = true;
+      // Liga o LED RGB (azul)
+      digitalWrite(BLUE_PIN, HIGH);
+    }
+
+    if (sndFl && (millis() - sndLast) > SND_ALERT_INTERVAL) {
+      // Envia alerta via HTTP
+      httpClient.begin("http://192.168.0.31/"
+                      "?" + SENSOR_ID +
+                      "&" + String((millis() - sndStart) / 1000) +
+                      "&" + String(sndLvl));
+
+      int code = httpClient.GET();
+      if (code == HTTP_CODE_OK) {
+        sndLast = millis(); // Sucesso, atualiza último envio
+      } else {
+        Serial.println("Erro: " + httpClient.errorToString(code));
+        delay(1000);
+      }
+      httpClient.end();
+    }
+  } else if (sndLvl < SND_TRIG_MIN) {
+    // Som não detectado
+    sndFl = false;
+    // Desliga o LED RGB
+    digitalWrite(BLUE_PIN, LOW);
+  }
+
+  // Log - descomente para exibir dados de teste
+/*
+  Serial.print(String(sndLvl) + "\t");
+  if (sndFl) {
+    Serial.println("Sim Duração:" + String((millis() - sndStart) / 1000));
+  } else {
+    Serial.println("Não");
+  }
+*/
+  delay(10);
+}
