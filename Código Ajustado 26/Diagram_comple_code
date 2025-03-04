@@ -1,0 +1,53 @@
+Aqui está o esquema completo de conexões para o código fornecido, detalhando as ligações com a ESP32:
+
+Lista de Componentes Necessários:
+ESP32 - Controlador principal
+
+Microfone analógico (ex.: módulo de som com saída analógica)
+
+LED RGB (anodo comum ou cátodo comum) - Usado para indicação de som detectado
+
+Resistores de 220Ω a 330Ω - Para proteção dos LEDs
+
+LED individual - Controlado pela interface web
+
+Jumpers e Protoboard - Para conexões
+
+Esquema de Ligações:
+1. Microfone analógico:
+Saída Analógica (OUT) → Pino GPIO15 (ANALOG_PIN) da ESP32
+
+VCC do Microfone → 3.3V na ESP32
+
+GND do Microfone → GND na ESP32
+
+2. LED RGB:
+Pino Vermelho (R) → Resistor (220Ω) → GPIO21 (RED_PIN) da ESP32
+
+Pino Verde (G) → Resistor (220Ω) → GPIO22 (GREEN_PIN) da ESP32
+
+Pino Azul (B) → Resistor (220Ω) → GPIO23 (BLUE_PIN) da ESP32
+
+Comum (anodo ou cátodo dependendo do tipo do LED) →
+
+Se cátodo comum: Conecte ao GND
+
+Se anodo comum: Conecte ao 3.3V
+
+3. LED Individual (Controle Web):
+Ânodo (+) → Resistor (220Ω) → GPIO2 (LED_PIN) da ESP32
+
+Cátodo (-) → GND da ESP32
+
+4. Alimentação da ESP32:
+Conecte a ESP32 via USB ao computador ou use uma fonte de alimentação externa compatível (5V via entrada micro-USB).
+
+Diagrama Descritivo de Pinos:
+Componente	Pino ESP32	Observação
+Microfone (OUT)	GPIO15	Pino analógico
+LED RGB (R)	GPIO21	Protegido por resistor
+LED RGB (G)	GPIO22	Protegido por resistor
+LED RGB (B)	GPIO23	Protegido por resistor
+LED Individual	GPIO2	Controle via interface web
+GND	GND	Comum para todos
+VCC	3.3V	Para microfone e LEDs
